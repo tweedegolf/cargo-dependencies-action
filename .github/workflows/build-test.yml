@@ -1,0 +1,27 @@
+name: Build and test
+on: # rebuild any PRs and main branch changes
+  pull_request: ~
+  push:
+    branches:
+      - main
+      - 'releases/*'
+
+jobs:
+  build: # make sure build/ci work properly
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: npm ci
+      - run: npm run all
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v3
+      - run: rustup toolchain install stable --profile minimal
+      - uses: ./
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
