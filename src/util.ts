@@ -106,7 +106,11 @@ export function delta(a: number, b: number): string {
   }
 
   const sign = a === b ? 0 : a > b ? '+' : '-'
-  const diff = Math.abs(100 - 100 * (a / b)).toFixed(0)
+  const diff = Math.abs(100 - 100 * (a / b))
 
-  return `${sign}${diff}%`
+  if (diff < 0.1) {
+    return '-'
+  }
+
+  return `${sign}${diff.toFixed(1)}%`
 }
