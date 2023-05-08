@@ -202,7 +202,7 @@ function createOrUpdateComment(octokit, title, message) {
             per_page: 100
         });
         if (comments.status !== 200) {
-            return core.setFailed(`Error fetching comments for ${github.context.issue.number}`);
+            throw new Error(`Error fetching comments for ${github.context.issue.number}`);
         }
         core.info(`Found ${comments.data.length} comments. Searching for comments containing ${title}`);
         const ourComments = comments.data.filter(v => { var _a, _b; return ((_a = v.user) === null || _a === void 0 ? void 0 : _a.login) === 'github-actions[bot]' && ((_b = v.body) === null || _b === void 0 ? void 0 : _b.includes(title)); });
@@ -283,8 +283,12 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             if (!exports.ALLOWED_EVENTS.includes(github.context.eventName)) {
-                core.setFailed('This can only be used with on a pull_request');
+                core.warning('This can only be used with on a pull_request and pushes');
                 return;
+            }
+            const workingDirectory = core.getInput('workingDirectory');
+            if (workingDirectory !== '.') {
+                process.chdir(workingDirectory);
             }
             const state = yield (0, state_1.getState)();
             const mainBranchName = core.getInput('mainBranchName');
@@ -306,7 +310,12 @@ function run() {
             const message = (0, comment_1.formatComment)(state, mainState, mainBranchName);
             core.info(message);
             if (github.context.issue.number) {
-                yield (0, comment_1.createOrUpdateComment)(octokit, exports.TITLE, message);
+                try {
+                    yield (0, comment_1.createOrUpdateComment)(octokit, exports.TITLE, message);
+                }
+                catch (e) {
+                    core.warning(e.message);
+                }
             }
         }
         catch (error) {
@@ -507,8 +516,11 @@ function delta(a, b) {
         return '-';
     }
     const sign = a === b ? 0 : a > b ? '+' : '-';
-    const diff = Math.abs(100 - 100 * (a / b)).toFixed(0);
-    return `${sign}${diff}%`;
+    const diff = Math.abs(100 - 100 * (a / b));
+    if (diff < 0.1) {
+        return '-';
+    }
+    return `${sign}${diff.toFixed(1)}%`;
 }
 exports.delta = delta;
 

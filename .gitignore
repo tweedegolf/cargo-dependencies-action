@@ -99,6 +99,6 @@ __tests__/runner/*
 lib/**/*
 
 # Added by cargo
-/target
+example/target
 
 /tmp

@@ -80,7 +80,7 @@ export async function createOrUpdateComment(
   })
 
   if (comments.status !== 200) {
-    return core.setFailed(
+    throw new Error(
       `Error fetching comments for ${github.context.issue.number}`
     )
   }

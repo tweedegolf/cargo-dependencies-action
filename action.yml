@@ -8,6 +8,10 @@ inputs:
   token:
     description: 'Github token to use'
     required: true
+  workingDirectory:
+    description: 'Cargo project directory'
+    required: false
+    default: '.'
   mainBranchName:
     description: 'Pull requests will be compared to a main branch'
     required: false

@@ -12,8 +12,14 @@ export const TMP_DIR = 'tmp'
 async function run(): Promise<void> {
   try {
     if (!ALLOWED_EVENTS.includes(github.context.eventName)) {
-      core.setFailed('This can only be used with on a pull_request')
+      core.warning('This can only be used with on a pull_request and pushes')
       return
+    }
+
+    const workingDirectory = core.getInput('workingDirectory')
+
+    if (workingDirectory !== '.') {
+      process.chdir(workingDirectory)
     }
 
     const state = await getState()
@@ -46,7 +52,11 @@ async function run(): Promise<void> {
     core.info(message)
 
     if (github.context.issue.number) {
-      await createOrUpdateComment(octokit, TITLE, message)
+      try {
+        await createOrUpdateComment(octokit, TITLE, message)
+      } catch (e) {
+        core.warning((e as Error).message)
+      }
     }
   } catch (error) {
     if (error instanceof Error) {
