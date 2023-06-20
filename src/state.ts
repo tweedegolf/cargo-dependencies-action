@@ -8,25 +8,29 @@ export interface State {
   dependencies: TreeItem[]
 }
 
-export async function getState(): Promise<State> {
+export async function getState(bin: string): Promise<State> {
   const cargoPath: string = await io.which('cargo', true)
 
   core.info('Installing cargo-bloat and cargo-tree...')
   await exec(cargoPath, ['install', 'cargo-bloat', 'cargo-tree'])
 
   core.info('Running cargo bloat...')
-  const bloatResult = await exec(
-    cargoPath,
-    [
-      'bloat',
-      '--release',
-      '--all-features',
-      '--message-format=json',
-      '-n',
-      '1'
-    ],
-    true
-  )
+
+  const args = [
+    'bloat',
+    '--release',
+    '--all-features',
+    '--message-format=json',
+    '-n',
+    '1'
+  ]
+
+  if (bin) {
+    args.push('--bin')
+    args.push(bin)
+  }
+
+  const bloatResult = await exec(cargoPath, args, true)
 
   const bloat = JSON.parse(bloatResult.stdout)
 

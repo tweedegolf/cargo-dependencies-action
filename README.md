@@ -29,6 +29,7 @@ jobs:
       - uses: tweedegolf/cargo-dependencies-action
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          bin: app # optionally specify a binary
           mainBranchName: main
 ```
 

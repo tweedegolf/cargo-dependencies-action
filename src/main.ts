@@ -22,7 +22,12 @@ async function run(): Promise<void> {
       process.chdir(workingDirectory)
     }
 
-    const state = await getState()
+    const bin = core.getInput('bin', {
+      required: false,
+      trimWhitespace: true
+    })
+
+    const state = await getState(bin)
 
     const mainBranchName = core.getInput('mainBranchName')
     const branchName = github.context.ref.replace('refs/heads/', '')
