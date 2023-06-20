@@ -12,6 +12,10 @@ inputs:
     description: 'Cargo project directory'
     required: false
     default: '.'
+  bin:
+    description: 'Specific binary'
+    required: false
+    default: null
   mainBranchName:
     description: 'Pull requests will be compared to a main branch'
     required: false
