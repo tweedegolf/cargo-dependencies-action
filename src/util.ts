@@ -1,3 +1,4 @@
+import * as core from '@actions/core'
 import * as actions_exec from '@actions/exec'
 
 export interface TreeItem {
@@ -83,6 +84,8 @@ export async function exec(
       }
     }
   }
+
+  core.info(`Running: ${cmd} ${args.join(' ')}`)
 
   await actions_exec.exec(cmd, args, options)
 

@@ -290,7 +290,11 @@ function run() {
             if (workingDirectory !== '.') {
                 process.chdir(workingDirectory);
             }
-            const state = yield (0, state_1.getState)();
+            const bin = core.getInput('bin', {
+                required: false,
+                trimWhitespace: true
+            });
+            const state = yield (0, state_1.getState)(bin);
             const mainBranchName = core.getInput('mainBranchName');
             const branchName = github.context.ref.replace('refs/heads/', '');
             if (branchName === mainBranchName) {
@@ -372,20 +376,25 @@ exports.getState = void 0;
 const io = __importStar(__nccwpck_require__(7436));
 const core = __importStar(__nccwpck_require__(2186));
 const util_1 = __nccwpck_require__(4024);
-function getState() {
+function getState(bin) {
     return __awaiter(this, void 0, void 0, function* () {
         const cargoPath = yield io.which('cargo', true);
         core.info('Installing cargo-bloat and cargo-tree...');
         yield (0, util_1.exec)(cargoPath, ['install', 'cargo-bloat', 'cargo-tree']);
         core.info('Running cargo bloat...');
-        const bloatResult = yield (0, util_1.exec)(cargoPath, [
+        const args = [
             'bloat',
             '--release',
             '--all-features',
             '--message-format=json',
             '-n',
             '1'
-        ], true);
+        ];
+        if (bin) {
+            args.push('--bin');
+            args.push(bin);
+        }
+        const bloatResult = yield (0, util_1.exec)(cargoPath, args, true);
         const bloat = JSON.parse(bloatResult.stdout);
         core.info('Running cargo tree...');
         const tree = yield (0, util_1.exec)(cargoPath, ['tree', '--all-features', '--prefix=depth', '-e=no-dev'], true);
@@ -440,6 +449,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.delta = exports.humanFileSize = exports.exec = exports.renderTree = exports.parseTree = void 0;
+const core = __importStar(__nccwpck_require__(2186));
 const actions_exec = __importStar(__nccwpck_require__(1514));
 function parseTree(tree) {
     const root = [];
@@ -496,6 +506,7 @@ function exec(cmd, args, silent = false) {
                 }
             }
         };
+        core.info(`Running: ${cmd} ${args.join(' ')}`);
         yield actions_exec.exec(cmd, args, options);
         return {
             stdout,
